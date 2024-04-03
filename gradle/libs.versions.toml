@@ -16,7 +16,6 @@ navigation = "2.7.7"
 glide = "4.16.0"
 swipeRefresh = "1.2.0-alpha01"
 retrofit = "2.9.0"
-viewModel = "2.7.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }

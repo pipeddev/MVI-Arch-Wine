@@ -1,4 +1,4 @@
-package com.pipe.d.dev.mviarchwine.favoriteModule
+package com.pipe.d.dev.mviarchwine.favoriteModule.view
 
 import android.view.View
 import androidx.recyclerview.widget.RecyclerView

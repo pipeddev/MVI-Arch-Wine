@@ -13,7 +13,7 @@
 
     <fragment
         android:id="@+id/navigation_favourite"
-        android:name="com.pipe.d.dev.mviarchwine.favoriteModule.FavouriteFragment"
+        android:name="com.pipe.d.dev.mviarchwine.favoriteModule.view.FavouriteFragment"
         android:label="@string/favourite_title"
         tools:layout="@layout/fragment_home"/>
 

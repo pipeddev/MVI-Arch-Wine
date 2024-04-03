@@ -3,6 +3,7 @@ package com.pipe.d.dev.mviarchwine.accountModule.view
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -20,10 +21,12 @@ import com.pipe.d.dev.mviarchwine.mainModule.MainActivity
 import com.pipe.d.dev.mviarchwine.R
 import com.pipe.d.dev.mviarchwine.accountModule.AccountViewModel
 import com.pipe.d.dev.mviarchwine.accountModule.AccountViewModelFactory
+import com.pipe.d.dev.mviarchwine.accountModule.intent.AccountIntent
 import com.pipe.d.dev.mviarchwine.accountModule.model.AccountRepository
 import com.pipe.d.dev.mviarchwine.accountModule.model.AccountState
 import com.pipe.d.dev.mviarchwine.commonModule.entities.FirebaseUser
 import com.pipe.d.dev.mviarchwine.databinding.FragmentAccountBinding
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 /****
@@ -68,6 +71,7 @@ class AccountFragment : Fragment() {
 
     private fun setupUserUI(user: FirebaseUser) {
         //val auth = FakeFirebaseAuth()
+        Log.i("AccountFragment", "Entró")
         with(binding) {
             tvName.text = user.displayName
             tvEmail.text = user.email
@@ -111,8 +115,8 @@ class AccountFragment : Fragment() {
 
     private fun setupButtons() {
         binding.btnSignOut.setOnClickListener {
-            lifecycleScope.launch {
-                // TODO:
+            lifecycleScope.launch(Dispatchers.IO) {
+                vm.channel.send(AccountIntent.SignOut)
 
             }
         }
@@ -148,6 +152,13 @@ class AccountFragment : Fragment() {
 
     private fun showProgress(isVisible: Boolean) {
         binding.contentProgress.root.visibility = if (isVisible) View.VISIBLE else View.GONE
+    }
+
+    override fun onResume() {
+        super.onResume()
+        lifecycleScope.launch(Dispatchers.IO) {
+            vm.channel.send(AccountIntent.RequestUser)
+        }
     }
 
     override fun onDestroyView() {

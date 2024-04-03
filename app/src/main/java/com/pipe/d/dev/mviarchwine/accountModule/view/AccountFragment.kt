@@ -17,6 +17,8 @@ import com.pipe.d.dev.mviarchwine.commonModule.utils.Constants
 import com.pipe.d.dev.mviarchwine.commonModule.dataAccess.local.FakeFirebaseAuth
 import com.pipe.d.dev.mviarchwine.mainModule.MainActivity
 import com.pipe.d.dev.mviarchwine.R
+import com.pipe.d.dev.mviarchwine.accountModule.AccountViewModel
+import com.pipe.d.dev.mviarchwine.accountModule.model.AccountRepository
 import com.pipe.d.dev.mviarchwine.accountModule.model.AccountState
 import com.pipe.d.dev.mviarchwine.commonModule.entities.FirebaseUser
 import com.pipe.d.dev.mviarchwine.databinding.FragmentAccountBinding
@@ -40,6 +42,7 @@ class AccountFragment : Fragment() {
 
     private var _binding: FragmentAccountBinding? = null
     private val binding get() = _binding!!
+    private lateinit var vm: AccountViewModel
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?): View {
@@ -50,8 +53,13 @@ class AccountFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         //setupUserUI()
+        setupViewModel()
         setupObservers()
         setupButtons()
+    }
+
+    private fun setupViewModel() {
+        vm = AccountViewModel(AccountRepository(FakeFirebaseAuth()))
     }
 
     private fun setupUserUI(user: FirebaseUser) {
@@ -101,18 +109,7 @@ class AccountFragment : Fragment() {
         binding.btnSignOut.setOnClickListener {
             lifecycleScope.launch {
                 // TODO:
-                /*showProgress(true)
-                //val auth = FakeFirebaseAuth()
-                if (auth.signOut()){
-                    (requireActivity() as MainActivity).apply {
-                        setupNavView(false)
-                        launchLoginUI()
-                    }
-                    showProgress(false)
-                } else {
-                    showProgress(false)
-                    showMsg(R.string.account_sign_out_fail)
-                }*/
+
             }
         }
     }
@@ -120,21 +117,24 @@ class AccountFragment : Fragment() {
     private fun setupObservers() {
         lifecycleScope.launch {
             //val state = AccountState
-            when(state) {
-                is AccountState.Init -> {}
-                is AccountState.ShowProgress -> showProgress(true)
-                is AccountState.HideProgress -> showProgress(false)
-                is AccountState.SignOutSuccess -> {
-                    (requireActivity() as MainActivity).apply {
-                        setupNavView(false)
-                        launchLoginUI()
-                    }
-                    showProgress(false)
-                }
-                is AccountState.RequestUserSuccess -> setupUserUI(state.user)
-                is AccountState.Fail -> showMsg(state.msgRes)
 
+            vm.state.collect { state ->
+                when(state) {
+                    is AccountState.Init -> {}
+                    is AccountState.ShowProgress -> showProgress(true)
+                    is AccountState.HideProgress -> showProgress(false)
+                    is AccountState.SignOutSuccess -> {
+                        (requireActivity() as MainActivity).apply {
+                            setupNavView(false)
+                            launchLoginUI()
+                        }
+                        showProgress(false)
+                    }
+                    is AccountState.RequestUserSuccess -> setupUserUI(state.user)
+                    is AccountState.Fail -> showMsg(state.msgRes)
+                }
             }
+
         }
     }
 

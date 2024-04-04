@@ -5,12 +5,19 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.pipe.d.dev.mviarchwine.databinding.FragmentLoginBinding
 import com.google.android.material.snackbar.Snackbar
 import com.pipe.d.dev.mviarchwine.commonModule.dataAccess.local.FakeFirebaseAuth
 import com.pipe.d.dev.mviarchwine.mainModule.MainActivity
 import com.pipe.d.dev.mviarchwine.R
+import com.pipe.d.dev.mviarchwine.homeModule.model.HomeState
+import com.pipe.d.dev.mviarchwine.loginModule.LoginViewModel
+import com.pipe.d.dev.mviarchwine.loginModule.LoginViewModelFactory
+import com.pipe.d.dev.mviarchwine.loginModule.intent.LoginIntent
+import com.pipe.d.dev.mviarchwine.loginModule.model.LoginRepository
+import com.pipe.d.dev.mviarchwine.loginModule.model.LoginState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -32,6 +39,8 @@ class LoginFragment : Fragment() {
     private var _binding: FragmentLoginBinding? = null
     private val binding get() = _binding!!
 
+    private lateinit var vm: LoginViewModel
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?): View {
         _binding = FragmentLoginBinding.inflate(inflater, container, false)
@@ -41,13 +50,21 @@ class LoginFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        checkAuth()
+        setupViewModel()
         setupButtons()
+        setupObservers()
+    }
+
+    private fun setupViewModel() {
+        vm = ViewModelProvider(this,
+            LoginViewModelFactory(
+                LoginRepository(FakeFirebaseAuth())))[LoginViewModel::class.java]
     }
 
     private fun checkAuth() {
         lifecycleScope.launch {
-            showProgress(true)
+            vm.channel.send(LoginIntent.CheckAuth)
+            /*showProgress(true)
             delay(2_500)
             val auth = FakeFirebaseAuth()
             if (auth.isValidAuth()) {
@@ -56,6 +73,7 @@ class LoginFragment : Fragment() {
                 showForm(true)
             }
             showProgress(false)
+             */
         }
     }
 
@@ -63,7 +81,8 @@ class LoginFragment : Fragment() {
         with(binding) {
             btnLogin.setOnClickListener {
                 lifecycleScope.launch {
-                    showProgress(true)
+                    vm.channel.send(LoginIntent.SignIn(etUsername.text.toString(), etPin.text.toString()))
+                    /*showProgress(true)
                     showForm(false)
                     val auth = FakeFirebaseAuth()
                     if (auth.login(etUsername.text.toString(), etPin.text.toString()))
@@ -71,6 +90,29 @@ class LoginFragment : Fragment() {
                     else {
                         showProgress(false)
                         showMsg(R.string.login_login_fail)
+                        showForm(true)
+                    }*/
+                }
+            }
+        }
+    }
+
+    private fun setupObservers() {
+        lifecycleScope.launch {
+            vm.state.collect { state ->
+                when(state) {
+                    is LoginState.Init -> checkAuth()
+                    is LoginState.ShowProgress -> {
+                        showProgress(true)
+                        showForm(false)
+                    }
+                    is LoginState.HideProgress -> showProgress(false)
+                    /*is LoginState.AuthValid -> closeLoginUI()
+                    is LoginState.LoginSuccess -> closeLoginUI()*/
+                    is LoginState.AuthValid,
+                    is LoginState.LoginSuccess -> closeLoginUI()
+                    is LoginState.Fail -> {
+                        showMsg(state.msgRes)
                         showForm(true)
                     }
                 }

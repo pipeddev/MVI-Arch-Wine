@@ -1,26 +1,29 @@
 package com.pipe.d.dev.mviarchwine.homeModule.view
 
 import android.os.Bundle
-import android.util.Log
 import android.view.View
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
+import com.pipe.d.dev.mviarchwine.R
+import com.pipe.d.dev.mviarchwine.commonModule.dataAccess.retrofit.WineService
+import com.pipe.d.dev.mviarchwine.commonModule.entities.Wine
 import com.pipe.d.dev.mviarchwine.commonModule.utils.Constants
 import com.pipe.d.dev.mviarchwine.commonModule.utils.OnClickListener
-import com.pipe.d.dev.mviarchwine.R
-import com.pipe.d.dev.mviarchwine.commonModule.entities.Wine
-import com.pipe.d.dev.mviarchwine.WineApplication
 import com.pipe.d.dev.mviarchwine.commonModule.view.WineBaseFragment
-import com.pipe.d.dev.mviarchwine.commonModule.dataAccess.retrofit.WineService
+import com.pipe.d.dev.mviarchwine.homeModule.HomeViewModel
+import com.pipe.d.dev.mviarchwine.homeModule.HomeViewModelFactory
+import com.pipe.d.dev.mviarchwine.homeModule.intent.HomeIntent
+import com.pipe.d.dev.mviarchwine.homeModule.model.HomeRepository
+import com.pipe.d.dev.mviarchwine.homeModule.model.HomeState
+import com.pipe.d.dev.mviarchwine.homeModule.model.RoomDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import kotlin.random.Random
 
 
 /****
@@ -41,14 +44,22 @@ class HomeFragment : WineBaseFragment(), OnClickListener {
 
     private lateinit var adapter: WineListAdapter
     private lateinit var service: WineService
+    private lateinit var vm: HomeViewModel
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        setupViewModel()
         setupAdapter()
         setupRecyclerView()
         setupSwipeRefresh()
-        setupRetrofit()
+        setupObservers()
+    }
+
+    private fun setupViewModel() {
+        vm = ViewModelProvider(this,
+            HomeViewModelFactory(
+                HomeRepository(RoomDatabase(), setupRetrofit())))[HomeViewModel::class.java]
     }
 
     private fun setupAdapter() {
@@ -71,7 +82,8 @@ class HomeFragment : WineBaseFragment(), OnClickListener {
 
     private fun getWines() {
         lifecycleScope.launch(Dispatchers.IO) {
-            try {
+            vm.channel.send(HomeIntent.RequestWines)
+            /*try {
                 val serverOk = Random.nextBoolean()
                 val wines = if (serverOk) service.getRedWines()
                 else listOf()
@@ -90,16 +102,44 @@ class HomeFragment : WineBaseFragment(), OnClickListener {
                 showMsg(R.string.common_general_fail)
             } finally {
                 showProgress(false)
-            }
+            }*/
         }
     }
 
-    private fun setupRetrofit() {
+    private fun setupRetrofit(): WineService {
         val retrofit = Retrofit.Builder()
             .baseUrl(Constants.BASE_URL)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
-        service = retrofit.create(WineService::class.java)
+        return retrofit.create(WineService::class.java)
+    }
+
+    private fun setupObservers() {
+        lifecycleScope.launch {
+            vm.state.collect { state ->
+                when(state) {
+                    is HomeState.Init -> {}
+                    is HomeState.ShowProgress -> showProgress(true)
+                    is HomeState.HideProgress -> showProgress(false)
+                    is HomeState.RequestWinesSuccess -> {
+                        adapter.submitList(state.list)
+                        showNoDataView(state.list.isEmpty())
+                        showRecyclerView(state.list.isNotEmpty())
+                    }
+                    is HomeState.AddWineSuccess -> showMsg(state.msgRes)
+                    is HomeState.Fail -> handleError(state.code, state.msgRes)
+                }
+            }
+        }
+    }
+
+    private fun handleError(code: Int, msgRes: Int) {
+        if (code == Constants.EC_REQUEST_NO_WINES) {
+            showNoDataView(true)
+            showRecyclerView(false)
+        } else {
+            showMsg(msgRes)
+        }
     }
 
     private fun showMsg(msgRes: Int) {
@@ -120,10 +160,11 @@ class HomeFragment : WineBaseFragment(), OnClickListener {
 
     override fun onResume() {
         super.onResume()
-        if (adapter.itemCount == 0) {
+        /*if (adapter.itemCount == 0) {
             showProgress(true)
             getWines()
-        }
+        }*/
+        getWines()
     }
 
     /*
@@ -147,12 +188,13 @@ class HomeFragment : WineBaseFragment(), OnClickListener {
     private fun addToFavourites(wine: Wine) {
         lifecycleScope.launch(Dispatchers.IO) {
             wine.isFavorite = true
-            val result = WineApplication.database.wineDao().addWine(wine)
+            vm.channel.send(HomeIntent.AddWine(wine))
+            /*val result = WineApplication.database.wineDao().addWine(wine)
             if (result == -1L) {
                 showMsg(R.string.room_save_fail)
             } else {
                 showMsg(R.string.room_save_success)
-            }
+            }*/
         }
     }
 }

@@ -7,11 +7,13 @@ import com.pipe.d.dev.mviarchwine.commonModule.utils.Constants
 class FavoriteRepository(private val db: RoomDatabase) {
     fun getAllWines(): FavoriteState {
         val result = db.getAllWines()
-        return if (result.isNotEmpty()) {
+        return FavoriteState.RequestWinesSuccess(result)
+        /*return if (result.isNotEmpty()) {
             FavoriteState.RequestWinesSuccess(result)
         } else {
             FavoriteState.Fail(Constants.EC_REQUEST, R.string.room_request_fail)
-        }
+        }*/
+
     }
     fun addWine(wine: Wine): FavoriteState {
         val result = db.addWine(wine)

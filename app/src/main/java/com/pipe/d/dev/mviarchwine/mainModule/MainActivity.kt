@@ -7,7 +7,7 @@ import androidx.navigation.findNavController
 import androidx.navigation.ui.setupWithNavController
 import com.pipe.d.dev.mviarchwine.R
 import com.pipe.d.dev.mviarchwine.databinding.ActivityMainBinding
-import com.pipe.d.dev.mviarchwine.loginModule.LoginFragment
+import com.pipe.d.dev.mviarchwine.loginModule.view.LoginFragment
 
 /****
  * Project: Wines

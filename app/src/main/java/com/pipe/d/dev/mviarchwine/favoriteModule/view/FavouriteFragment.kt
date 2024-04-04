@@ -108,7 +108,11 @@ class FavouriteFragment : WineBaseFragment(), OnClickListener {
                     is FavoriteState.Init -> {}
                     is FavoriteState.ShowProgress -> showProgress(true)
                     is FavoriteState.HideProgress -> showProgress(false)
-                    is FavoriteState.RequestWinesSuccess -> adapter.submitList(state.list)
+                    is FavoriteState.RequestWinesSuccess -> {
+                        adapter.submitList(state.list)
+                        showNoDataView(state.list.isEmpty())
+                        showRecyclerView(state.list.isNotEmpty())
+                    }
                     is FavoriteState.AddWineSuccess -> showMsg(state.msgRes)
                     is FavoriteState.DeleteWineSuccess -> showMsg(state.msgRes)
                     is FavoriteState.Fail -> showMsg(state.msgRes)
@@ -147,21 +151,8 @@ class FavouriteFragment : WineBaseFragment(), OnClickListener {
         lifecycleScope.launch(Dispatchers.IO) {
             if (wine.isFavorite){
                 vm.channel.send(FavoriteIntent.AddWine(wine))
-                /*val result = WineApplication.database.wineDao().addWine(wine)
-                if (result == -1L) {
-                    Snackbar.make(binding.root, R.string.room_save_fail, Snackbar.LENGTH_SHORT).show()
-                } else {
-                    Snackbar.make(binding.root, R.string.room_save_success, Snackbar.LENGTH_SHORT).show()
-                }*/
-
             } else {
                 vm.channel.send(FavoriteIntent.DeleteWine(wine))
-                /*val result = WineApplication.database.wineDao().deleteWine(wine)
-                if (result == 0) {
-                    Snackbar.make(binding.root, R.string.room_save_fail, Snackbar.LENGTH_SHORT).show()
-                } else {
-                    Snackbar.make(binding.root, R.string.room_save_success, Snackbar.LENGTH_SHORT).show()
-                }*/
             }
         }
     }

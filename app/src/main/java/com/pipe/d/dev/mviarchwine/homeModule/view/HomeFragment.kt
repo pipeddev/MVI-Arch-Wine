@@ -1,4 +1,4 @@
-package com.pipe.d.dev.mviarchwine.homeModule
+package com.pipe.d.dev.mviarchwine.homeModule.view
 
 import android.os.Bundle
 import android.util.Log

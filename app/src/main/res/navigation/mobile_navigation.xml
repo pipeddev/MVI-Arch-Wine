@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/navigation_home"
-        android:name="com.pipe.d.dev.mviarchwine.homeModule.HomeFragment"
+        android:name="com.pipe.d.dev.mviarchwine.homeModule.view.HomeFragment"
         android:label="@string/home_title"
         tools:layout="@layout/fragment_home" />
 

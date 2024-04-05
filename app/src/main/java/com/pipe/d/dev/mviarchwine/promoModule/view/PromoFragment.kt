@@ -5,9 +5,20 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.snackbar.Snackbar
 import com.pipe.d.dev.mviarchwine.databinding.FragmentPromoBinding
 import com.pipe.d.dev.mviarchwine.commonModule.dataAccess.local.getAllPromos
+import com.pipe.d.dev.mviarchwine.promoModule.PromoViewModel
+import com.pipe.d.dev.mviarchwine.promoModule.PromoViewModelFactory
+import com.pipe.d.dev.mviarchwine.promoModule.intent.PromoIntent
+import com.pipe.d.dev.mviarchwine.promoModule.model.Database
+import com.pipe.d.dev.mviarchwine.promoModule.model.PromoRepository
+import com.pipe.d.dev.mviarchwine.promoModule.model.PromoState
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 
 /****
  * Project: Wines
@@ -25,6 +36,7 @@ import com.pipe.d.dev.mviarchwine.commonModule.dataAccess.local.getAllPromos
  ***/
 class PromoFragment : Fragment() {
     private var _binding: FragmentPromoBinding? = null
+    private lateinit var vm: PromoViewModel
     private val binding get() = _binding!!
 
     private lateinit var adapter: PromoListAdapter
@@ -38,9 +50,16 @@ class PromoFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        setupViewModel()
         setupAdapter()
         setupRecyclerView()
-        getPromos()
+        setupObservers()
+    }
+
+    private fun setupViewModel() {
+        vm = ViewModelProvider(this,
+            PromoViewModelFactory(
+                PromoRepository(Database())))[PromoViewModel::class.java]
     }
 
     private fun setupAdapter() {
@@ -56,9 +75,26 @@ class PromoFragment : Fragment() {
     }
 
     private fun getPromos() {
-        adapter.submitList(getAllPromos())
+        lifecycleScope.launch {
+            vm.channel.send(PromoIntent.RequestPromos)
+        }
     }
 
+    private fun setupObservers() {
+        lifecycleScope.launch {
+            vm.state.collect {state ->
+                when(state) {
+                    is PromoState.Init -> getPromos()
+                    is PromoState.RequestPromoSuccess -> adapter.submitList(state.list)
+                    is PromoState.Fail -> showMsg(state.msgRes)
+                }
+            }
+        }
+    }
+
+    private fun showMsg(msgRes: Int) {
+        Snackbar.make(binding.root, msgRes, Snackbar.LENGTH_SHORT).show()
+    }
     override fun onDestroy() {
         _binding = null
         super.onDestroy()

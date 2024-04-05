@@ -1,4 +1,4 @@
-package com.pipe.d.dev.mviarchwine.mainModule
+package com.pipe.d.dev.mviarchwine.mainModule.view
 
 import android.os.Bundle
 import android.view.View

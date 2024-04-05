@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import com.pipe.d.dev.mviarchwine.accountModule.intent.AccountIntent
 import com.pipe.d.dev.mviarchwine.accountModule.model.AccountRepository
 import com.pipe.d.dev.mviarchwine.accountModule.model.AccountState
-import com.pipe.d.dev.mviarchwine.mainModule.MainActivity
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

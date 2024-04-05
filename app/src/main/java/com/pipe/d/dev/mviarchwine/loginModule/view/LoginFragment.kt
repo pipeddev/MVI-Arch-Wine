@@ -10,15 +10,12 @@ import androidx.lifecycle.lifecycleScope
 import com.pipe.d.dev.mviarchwine.databinding.FragmentLoginBinding
 import com.google.android.material.snackbar.Snackbar
 import com.pipe.d.dev.mviarchwine.commonModule.dataAccess.local.FakeFirebaseAuth
-import com.pipe.d.dev.mviarchwine.mainModule.MainActivity
-import com.pipe.d.dev.mviarchwine.R
-import com.pipe.d.dev.mviarchwine.homeModule.model.HomeState
+import com.pipe.d.dev.mviarchwine.mainModule.view.MainActivity
 import com.pipe.d.dev.mviarchwine.loginModule.LoginViewModel
 import com.pipe.d.dev.mviarchwine.loginModule.LoginViewModelFactory
 import com.pipe.d.dev.mviarchwine.loginModule.intent.LoginIntent
 import com.pipe.d.dev.mviarchwine.loginModule.model.LoginRepository
 import com.pipe.d.dev.mviarchwine.loginModule.model.LoginState
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /****

@@ -17,7 +17,7 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.google.android.material.snackbar.Snackbar
 import com.pipe.d.dev.mviarchwine.commonModule.utils.Constants
 import com.pipe.d.dev.mviarchwine.commonModule.dataAccess.local.FakeFirebaseAuth
-import com.pipe.d.dev.mviarchwine.mainModule.MainActivity
+import com.pipe.d.dev.mviarchwine.mainModule.view.MainActivity
 import com.pipe.d.dev.mviarchwine.R
 import com.pipe.d.dev.mviarchwine.accountModule.AccountViewModel
 import com.pipe.d.dev.mviarchwine.accountModule.AccountViewModelFactory

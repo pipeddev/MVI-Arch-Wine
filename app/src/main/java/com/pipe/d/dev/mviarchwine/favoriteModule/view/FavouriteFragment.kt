@@ -8,11 +8,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import com.pipe.d.dev.mviarchwine.commonModule.utils.Constants
 import com.pipe.d.dev.mviarchwine.commonModule.utils.OnClickListener
-import com.pipe.d.dev.mviarchwine.R
 import com.pipe.d.dev.mviarchwine.updateModule.UpdateDialogFragment
 import com.pipe.d.dev.mviarchwine.commonModule.entities.Wine
-import com.pipe.d.dev.mviarchwine.WineApplication
-import com.pipe.d.dev.mviarchwine.accountModule.model.AccountState
 import com.pipe.d.dev.mviarchwine.commonModule.view.WineBaseFragment
 import com.pipe.d.dev.mviarchwine.favoriteModule.FavoriteViewModel
 import com.pipe.d.dev.mviarchwine.favoriteModule.FavoriteViewModelFactory
@@ -20,10 +17,8 @@ import com.pipe.d.dev.mviarchwine.favoriteModule.intent.FavoriteIntent
 import com.pipe.d.dev.mviarchwine.favoriteModule.model.FavoriteRepository
 import com.pipe.d.dev.mviarchwine.favoriteModule.model.FavoriteState
 import com.pipe.d.dev.mviarchwine.favoriteModule.model.RoomDatabase
-import com.pipe.d.dev.mviarchwine.mainModule.MainActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 /****
  * Project: Wines

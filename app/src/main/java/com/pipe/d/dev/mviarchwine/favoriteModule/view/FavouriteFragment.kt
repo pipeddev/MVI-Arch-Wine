@@ -8,7 +8,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import com.pipe.d.dev.mviarchwine.commonModule.utils.Constants
 import com.pipe.d.dev.mviarchwine.commonModule.utils.OnClickListener
-import com.pipe.d.dev.mviarchwine.updateModule.UpdateDialogFragment
+import com.pipe.d.dev.mviarchwine.updateModule.view.UpdateDialogFragment
 import com.pipe.d.dev.mviarchwine.commonModule.entities.Wine
 import com.pipe.d.dev.mviarchwine.commonModule.view.WineBaseFragment
 import com.pipe.d.dev.mviarchwine.favoriteModule.FavoriteViewModel
@@ -160,7 +160,6 @@ class FavouriteFragment : WineBaseFragment(), OnClickListener {
         fragment.arguments = args
         fragment.show(fragmentManager, UpdateDialogFragment::class.java.simpleName)
         fragment.setOnUpdateListener {
-            binding.srlResults.isRefreshing = true
             getWines()
         }
     }

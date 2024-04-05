@@ -1,4 +1,4 @@
-package com.pipe.d.dev.mviarchwine.updateModule
+package com.pipe.d.dev.mviarchwine.updateModule.view
 
 import android.app.AlertDialog
 import android.app.Dialog

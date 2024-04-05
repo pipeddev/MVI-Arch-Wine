@@ -1,4 +1,4 @@
-package com.pipe.d.dev.mviarchwine.promoModule
+package com.pipe.d.dev.mviarchwine.promoModule.view
 
 import android.content.Context
 import android.view.LayoutInflater

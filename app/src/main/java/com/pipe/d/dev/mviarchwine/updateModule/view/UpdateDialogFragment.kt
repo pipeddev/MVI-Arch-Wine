@@ -10,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.DialogFragment
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.pipe.d.dev.mviarchwine.databinding.FragmentDialogUpdateBinding
 import com.google.android.material.snackbar.Snackbar
@@ -17,6 +18,13 @@ import com.pipe.d.dev.mviarchwine.commonModule.utils.Constants
 import com.pipe.d.dev.mviarchwine.R
 import com.pipe.d.dev.mviarchwine.commonModule.entities.Wine
 import com.pipe.d.dev.mviarchwine.WineApplication
+import com.pipe.d.dev.mviarchwine.favoriteModule.model.FavoriteState
+import com.pipe.d.dev.mviarchwine.updateModule.UpdateViewModel
+import com.pipe.d.dev.mviarchwine.updateModule.UpdateViewModelFactory
+import com.pipe.d.dev.mviarchwine.updateModule.intent.UpdateIntent
+import com.pipe.d.dev.mviarchwine.updateModule.model.RoomDatabase
+import com.pipe.d.dev.mviarchwine.updateModule.model.UpdateRepository
+import com.pipe.d.dev.mviarchwine.updateModule.model.UpdateState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -44,6 +52,8 @@ class UpdateDialogFragment : DialogFragment(), OnShowListener {
     private lateinit var wine: Wine
 
     private var onUpdateListener: () -> Unit = {}
+
+    private lateinit var vm: UpdateViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -81,7 +91,8 @@ class UpdateDialogFragment : DialogFragment(), OnShowListener {
                 showProgress(true)
                 lifecycleScope.launch(Dispatchers.IO) {
                     wine.rating.average = binding.rating.rating.toString()
-                    lifecycleScope.launch(Dispatchers.IO) {
+                    vm.channel.send(UpdateIntent.UpdateWine(wine))
+                    /*lifecycleScope.launch(Dispatchers.IO) {
                         val result = WineApplication.database.wineDao().updateWine(wine)
                         withContext(Dispatchers.Main) {
                             if (result == 0) {
@@ -92,13 +103,20 @@ class UpdateDialogFragment : DialogFragment(), OnShowListener {
                             }
                             showProgress(false)
                         }
-                    }
+                    }*/
                 }
             }
             negativeButton.setOnClickListener { dismiss() }
         }
 
+        setupViewModel()
+        setupObservers()
         getWineById()
+    }
+
+    private fun setupViewModel() {
+        vm = ViewModelProvider(this,
+            UpdateViewModelFactory(UpdateRepository(RoomDatabase())))[UpdateViewModel::class.java]
     }
 
     private fun showMsg(msgRes: Int) {
@@ -111,10 +129,32 @@ class UpdateDialogFragment : DialogFragment(), OnShowListener {
 
     private fun getWineById() {
         lifecycleScope.launch(Dispatchers.IO) {
-            val result = WineApplication.database.wineDao().getWineById(_wineId)
+            vm.channel.send(UpdateIntent.RequestWine(_wineId))
+            /*val result = WineApplication.database.wineDao().getWineById(_wineId)
             wine = result
             withContext(Dispatchers.Main) {
                 setupUI()
+            }*/
+        }
+    }
+
+    private fun setupObservers() {
+        lifecycleScope.launch {
+            vm.state.collect { state ->
+                when(state) {
+                    is UpdateState.Init -> {}
+                    is UpdateState.ShowProgress -> showProgress(true)
+                    is UpdateState.HideProgress -> showProgress(false)
+                    is UpdateState.RequestWineSuccess -> {
+                        wine = state.wine
+                        setupUI()
+                    }
+                    is UpdateState.UpdateWineSuccess -> {
+                        showMsg(R.string.room_save_success)
+                        dismiss()
+                    }
+                    is UpdateState.Fail -> showMsg(state.msgRes)
+                }
             }
         }
     }
